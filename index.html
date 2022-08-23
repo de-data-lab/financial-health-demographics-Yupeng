@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Financial Health Demographics of Vulnerable </title>
+        <script type="text/javascript" src="https://d3js.org/d3.v7.min.js"></script> 
+        <style>
+
+            #header {
+                font-weight: bold;
+                font-size: 30px;
+            }
+
+            #optionContainer input {
+                visibility: hidden;
+            }
+
+            #optionContainer label {
+                display: inline-block;
+                transition: background-color .3s, box-shadow .3s;   
+                border: none;
+                border-radius: 3px;
+                box-shadow: 0 -1px 0 rgba(0, 0, 0, .04), 0 1px 1px rgba(0, 0, 0, .25);                
+                color: #757575;
+                font-size: 15px;                
+            }
+
+            #optionContainer input:hover + label {
+                cursor: pointer;
+                box-shadow: 0 -1px 0 rgba(0, 0, 0, .04), 0 2px 4px rgba(0, 0, 0, .25);
+            }
+
+            #optionContainer input:checked + label {
+                box-shadow: 0 -1px 0 rgba(0, 0, 0, .04), 0 2px 4px rgba(0, 0, 0, .25), 0 0 0 3px #c8dafc; 
+            }
+            
+            #footer p {
+				margin-top: 50px;
+				margin-bottom: 0;
+				font-size: 20px;
+				line-height: 14px;
+				color: gray;
+			}
+			
+			#footer p a {
+				color: gray;
+			}
+
+        </style>       
+    </head>
+    <body>
+        <div id="header">
+            <span>Vulnerable populations in 2021 Financial Health, who are they? </span>
+        </div>
+        <div id="optionContainer">
+            <input id="tab-1" type="radio" name="tab-group" value="gender" checked="checked" />
+            <label for="tab-1">Sex/Gender</label>
+            <input id="tab-2" type="radio" name="tab-group" value="age" />
+            <label for="tab-2">Age</label>
+            <input id="tab-3" type="radio" name="tab-group" value="immigrant" />
+            <label for="tab-3">Immigrant Status</label>
+            <input id="tab-4" type="radio" name="tab-group" value="marriage" />
+            <label for="tab-4">Marital Status</label>
+            <input id="tab-5" type="radio" name="tab-group" value="race" />
+            <label for="tab-5">Race/Ethnicity</label>
+            <input id="tab-6" type="radio" name="tab-group" value="labor" />
+            <label for="tab-6">Labor Status</label>
+            <input id="tab-7" type="radio" name="tab-group" value="income" />
+            <label for="tab-7">Household Income</label>
+            <input id="tab-8" type="radio" name="tab-group" value="health" />
+            <label for="tab-8">General Health</label>
+            <input id="tab-9" type="radio" name="tab-group" value="credit" />
+            <label for="tab-9">Credit Rate</label>
+            <input id="tab-10" type="radio" name="tab-group" value="stress" />
+            <label for="tab-10">Stress</label>
+            <input id="tab-11" type="radio" name="tab-group" value="check" />
+            <label for="tab-11">Stimulus Check</label>
+            <input id="tab-12" type="radio" name="tab-group" value="compared" />
+            <label for="tab-12">Compared to 2020</label>            
+        </div>
+        <div id="svgContainer"></div>
+        <div id="footer">
+            <p>
+                <strong>Credit:</strong> Héc Maldonado-Reis, Yupeng Lei, Delaware Data Innovation Lab (DDIL), Tech Impact.
+                <strong>Source:</strong> The Financial Health Network (FHN) Public Survey 2021.
+            </p>
+        </div>
+        <script type="text/javascript">
+            //set svg size
+            let w = 1200;
+            let h = 600;
+            let r = Math.min(w, h) / 2;
+
+            let genderData = [], 
+                ageData = [], 
+                immigrantData = [], 
+                maritalData = [], 
+                raceData = []
+                laborData = []
+                incomeData = []
+                healthData = []
+                creditData = []
+                stressData = []
+                checkData = []
+                comparedData = [];
+
+            //loading data from csv file
+            d3.csv("Pulse_2021_survey_public_data.csv").then(data => {
+
+                let genderGroup = {}, 
+                    ageGroup = {"Age 18-25" : 0, "Age 26-49" : 0, "Age 50+" : 0}, 
+                    immigrantGroup = {}, 
+                    maritalGroup = {},
+                    raceGroup = {},
+                    laborGroup = {},
+                    incomeGroup = {"Less than $30000" : 0, "$30000 - $59999" : 0, "$60000 - $99999" : 0, "$100000+" : 0},
+                    healthGroup = {},
+                    creditGroup = {},
+                    stressGroup = {},
+                    checkGroup = {},
+                    comparedGroup = {};
+
+                //group data and process data
+                for (let obj of data) {
+                    if (obj.FinancialHealth !== "Vulnerable" || obj.race === ".e" || obj.q002 === ".a" || obj.qa041 === ".a") continue;
+                    let gender = obj.gender.replace(/^[\s\d]+/, '');
+                    let immigrant = obj.immigrant_status.replace(/^[\s\d]+/, '');
+                    let marriage = obj.maritalstatus.replace(/^[\s\d]+/, '');
+                    let race = obj.race.replace(/^[\s\d]+/, '');
+                    let labor = obj.laborstatus.replace(/^[\s\d]+/, '');
+                    let health = obj.q002.replace(/^[\s\d]+/, '');
+                    let credit = obj.q004.replace(/^[\s\d]+/, '');
+                    let stress = obj.q013.replace(/^[\s\d]+/, '');
+                    let check = obj.qa041.replace(/^[\s\d]+/, '');
+                    let compared = obj.qb050.replace(/^[\s\d]+/, '');
+                    
+                    genderGroup[gender] = genderGroup[gender] ? genderGroup[gender] + 1 : 1;
+                    immigrantGroup[immigrant] = immigrantGroup[immigrant] ? immigrantGroup[immigrant] + 1 : 1;
+                    maritalGroup[marriage] = maritalGroup[marriage] ? maritalGroup[marriage] + 1 : 1;
+                    raceGroup[race] = raceGroup[race] ? raceGroup[race] + 1 : 1;
+                    laborGroup[labor] = laborGroup[labor] ? laborGroup[labor] + 1 : 1;
+                    healthGroup[health] = healthGroup[health] ? healthGroup[health] + 1 : 1;
+                    creditGroup[credit] = creditGroup[credit] ? creditGroup[credit] + 1 : 1;
+                    stressGroup[stress] = stressGroup[stress] ? stressGroup[stress] + 1 : 1;
+                    checkGroup[check] = checkGroup[check] ? checkGroup[check] + 1 : 1;
+                    comparedGroup[compared] = comparedGroup[compared] ? comparedGroup[compared] + 1 : 1;
+                    
+                    if (Number(obj.age) <= 25) {
+                        ageGroup["Age 18-25"]++;
+                    } else if (Number(obj.age) <= 49) {
+                        ageGroup["Age 26-49"]++;
+                    } else {
+                        ageGroup["Age 50+"]++;
+                    }
+
+                    let range0 = ["1 ", "2 ", "3 ", "4 ", "5, ", "6, ", "7 "],
+                        range1 = ["8 ", "9 ", "10", "11", "12"],
+                        range2 = ["13", "14"];
+
+                    if (range0.includes(obj.hhincome.slice(0, 2))) {
+                        incomeGroup["Less than $30000"]++;
+                    } else if (range1.includes(obj.hhincome.slice(0, 2))) {
+                        incomeGroup["$30000 - $59999"]++;
+                    } else if (range2.includes(obj.hhincome.slice(0, 2))) {
+                        incomeGroup["$60000 - $99999"]++;
+                    } else {
+                        incomeGroup["$100000+"]++;
+                    }                   
+                }
+
+                //convert data into donut/pie chart data-ready format
+                for (let key in genderGroup) {
+                    genderData.push([key, genderGroup[key]]);
+                }
+
+                for (let key in ageGroup) {
+                    ageData.push([key, ageGroup[key]]);
+                }
+
+                for (let key in immigrantGroup) {
+                    immigrantData.push([key, immigrantGroup[key]]);
+                }
+
+                for (let key in maritalGroup) {
+                    maritalData.push([key, maritalGroup[key]]);
+                }
+
+                for (let key in raceGroup) {
+                    raceData.push([key, raceGroup[key]]);
+                }
+
+                for (let key in laborGroup) {
+                    laborData.push([key, laborGroup[key]]);
+                }
+
+                for (let key in incomeGroup) {
+                    incomeData.push([key, incomeGroup[key]]);
+                }
+
+                for (let key in healthGroup) {
+                    healthData.push([key, healthGroup[key]]);
+                }
+
+                for (let key in creditGroup) {
+                    creditData.push([key, creditGroup[key]]);
+                }
+
+                for (let key in stressGroup) {
+                    stressData.push([key, stressGroup[key]]);
+                }
+
+                for (let key in checkGroup) {
+                    checkData.push([key, checkGroup[key]]);
+                }
+
+                for (let key in comparedGroup) {
+                    comparedData.push([key, comparedGroup[key]]);
+                }
+
+                //construct an arc generator with inner and outer radius setting
+                let arc = d3.arc() 
+                            .innerRadius(r * 0.6)
+                            .outerRadius(r * 0.8);
+
+                //construct an arc generator for polylines and text labels
+                let outerArc = d3.arc()
+                                    .innerRadius(r * 0.85)
+                                    .outerRadius(r * 0.85);
+                                    
+                //construct a new pie generator with value setting
+                const pie = d3.pie()
+                                .value(d => d[1]); 
+
+                //color selections               
+                let color = ["#dd5182", "#003f5c", "#ff6e54", "#444e86", "#955196", "#ffa600", "#2f4b7c", "#b15928"];
+
+                //create a svg element
+                let svg = d3.select("#svgContainer")
+                            .append("svg")
+                            .attr("width", w)
+                            .attr("height", h);
+
+                //create a circle element inside the donut chart
+                svg.append("circle")
+                    .attr("cx", 0)
+                    .attr("cy", 0)
+                    .attr("r", r * 0.55)
+                    .attr("fill", "white")
+                    .attr("class", "circle-inside")
+                    .attr("transform", `translate(${w/2 + 20}, ${h/2 + 20})`);
+
+                let arcs;
+
+                //define drawChart function to draw different chart based on different dataset
+                const drawChart = (dataset) => {
+
+                    //set up groups and load data for the chart
+                    arcs = svg.selectAll("g.arc")
+                                .data(pie(dataset)) 
+                                .enter()
+                                .append("g")
+                                .attr("class", "arc")
+                                .attr("transform", `translate(${w/2 + 20}, ${h/2 + 20})`);
+
+                    //Draw arc paths
+                    arcs.append("path")
+                        .attr("fill", d => color[d.index]) 
+                        .attr("stroke", "white")
+                        .attr("stroke-width", "2px")
+                        .attr("d", arc);
+
+                    //define total for calculating percentage
+                    let total = d3.sum(dataset.map(d => d[1]));
+
+                    //create a text element on the circle inside donut chart
+                    arcs.append("text")
+                            .attr("class", "percentage")
+                            .attr("text-anchor", "middle")
+                            .text("");
+
+                    //create polyline elements for each data group
+                    arcs.append("polyline")
+                        .attr("points", d => {
+                            let posA = arc.centroid(d);
+                            let posB = outerArc.centroid(d);
+                            let posC = outerArc.centroid(d);
+                            let midAngle = d.startAngle + (d.endAngle - d.startAngle) / 2;
+                            posC[0] = r * 0.95 * (midAngle < Math.PI || midAngle > 6.2 ? 1 : -1);
+                            return [posA, posB, posC];
+                        })
+                        .attr("fill", "none")
+                        .attr("stroke", d => color[d.index])
+                        .attr("stroke-width", "1px");
+                    
+                    //create text label elements for each data group
+                    arcs.append("text")
+                        .text(d => d.data[0])
+                        .attr("transform", d => {
+                            let pos = outerArc.centroid(d);
+                            let midAngle = d.startAngle + (d.endAngle - d.startAngle) / 2
+                            pos[0] = r * (midAngle < Math.PI || midAngle > 6.2 ? 1 : -1);
+                            return `translate(${pos})`;
+                        })
+                        .attr("text-anchor", d => {
+                            let midAngle = d.startAngle + (d.endAngle - d.startAngle) / 2
+                            return (midAngle < Math.PI || midAngle > 6.2 ? 'start' : 'end');
+                        })
+                        .attr("fill", d => color[d.index])
+                        .attr("font-weight", "bold")
+                        .attr("font-size", "20px")
+                        .attr("dy", "0.35em");
+                        
+                    //define event listners for mouseover, mouseout
+                    arcs.on("mouseover", (event, d) => {
+
+                            d3.select(".circle-inside")
+                                .attr("fill", color[d.index]);   
+                                
+                            d3.select(".percentage")
+                                .attr("fill", "white")
+                                .attr("font-size", "100px")
+                                .attr("font-weight", "3em")
+                                .attr("dy", "0.3em")
+                                .text(d3.format(".0%")(d.data[1] / total));
+
+                        })
+                        .on("mouseout", (event, d) => {
+
+                            d3.select(".circle-inside")
+                                .attr("fill", "white");
+                            
+                            d3.select(".percentage")
+                                .text("");
+
+                        });
+
+                }
+
+                //define radio buttons to load selected dataset and draw chart accordingly
+                d3.selectAll("input")
+                    .on("change", (event, d) => {
+
+                        arcs.remove();
+                        let selection = event.currentTarget.value;
+                        switch (selection) {
+                            case "gender":
+                                drawChart(genderData);
+                                break;
+                            case "age":
+                                drawChart(ageData);
+                                break;
+                            case "immigrant":
+                                drawChart(immigrantData);
+                                break;
+                            case "marriage":
+                                drawChart(maritalData);
+                                break;
+                            case "race":
+                                drawChart(raceData);
+                                break;
+                            case "labor":
+                                drawChart(laborData);
+                                break;
+                            case "income":
+                                drawChart(incomeData);
+                                break;
+                            case "health":
+                                drawChart(healthData);
+                                break;
+                            case "credit":
+                                drawChart(creditData);
+                                break;
+                            case "stress":
+                                drawChart(stressData);
+                                break;
+                            case "check":
+                                drawChart(checkData);
+                                break;
+                            case "compared":
+                                drawChart(comparedData);
+                                break;
+                            default:
+                                break;
+                        }
+                        
+                    });
+                
+                //draw the default chart for the default loading page
+                drawChart(genderData);                                
+                        
+            }).catch((error) => {
+                console.log(error);
+            });
+            
+        </script>
+    </body>
+</html>
