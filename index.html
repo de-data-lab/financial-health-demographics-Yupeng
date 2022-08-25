@@ -21,8 +21,9 @@
                 border: none;
                 border-radius: 3px;
                 box-shadow: 0 -1px 0 rgba(0, 0, 0, .04), 0 1px 1px rgba(0, 0, 0, .25);                
-                color: #757575;
-                font-size: 15px;                
+                background-color: #757575;
+                font-size: 15px;  
+                color: white;
             }
 
             #optionContainer input:hover + label {
@@ -31,20 +32,22 @@
             }
 
             #optionContainer input:checked + label {
-                box-shadow: 0 -1px 0 rgba(0, 0, 0, .04), 0 2px 4px rgba(0, 0, 0, .25), 0 0 0 3px #c8dafc; 
+                box-shadow: 0 -1px 0 rgba(0, 0, 0, .04), 0 2px 4px rgba(0, 0, 0, .25), 0 0 0 3px #4575b4; 
+                background-color: white;
+                color: #757575;
             }
             
             #footer p {
-				margin-top: 50px;
-				margin-bottom: 0;
-				font-size: 20px;
-				line-height: 14px;
-				color: gray;
-			}
+		margin-top: 50px;
+		margin-bottom: 0;
+		font-size: 20px;
+		line-height: 14px;
+		color: gray;
+	    }
 			
-			#footer p a {
-				color: gray;
-			}
+	    #footer p a {
+		color: gray;
+	    }
 
         </style>       
     </head>
@@ -95,13 +98,13 @@
                 ageData = [], 
                 immigrantData = [], 
                 maritalData = [], 
-                raceData = []
-                laborData = []
-                incomeData = []
-                healthData = []
-                creditData = []
-                stressData = []
-                checkData = []
+                raceData = [],
+                laborData = [],
+                incomeData = [],
+                healthData = [],
+                creditData = [],
+                stressData = [],
+                checkData = [],
                 comparedData = [];
 
             //loading data from csv file
@@ -232,7 +235,7 @@
                                 .value(d => d[1]); 
 
                 //color selections               
-                let color = ["#dd5182", "#003f5c", "#ff6e54", "#444e86", "#955196", "#ffa600", "#2f4b7c", "#b15928"];
+                let color = ["#fa9fb5", "#4575b4", "#fdae61", "#b2182b", "#de77ae", "#8856a7", "#d95f02", "#31a354"];
 
                 //create a svg element
                 let svg = d3.select("#svgContainer")
