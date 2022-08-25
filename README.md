@@ -15,6 +15,7 @@ Pulse_2021_survey_public_data
 
 ##  Credits 
 @[Yupeng Lei](https://github.com/YupengLei)  
+@[Héc Maldonado-Reis](mailto:hector@techimpact.org)  
 @[Delaware Data Innovation Lab](https://ddil.ai/)  
 @[Tech Impact](https://techimpact.org/)
 
